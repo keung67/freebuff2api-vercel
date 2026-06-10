@@ -95,6 +95,18 @@ class ConfigTests(unittest.TestCase):
 
         self.assertEqual(settings.admin_key, DEFAULT_ADMIN_KEY)
 
+    def test_load_settings_does_not_expose_custom_browser_user_agent(self) -> None:
+        with patch.dict(
+            "os.environ",
+            {
+                "FREEBUFF_BROWSER_UA": "custom-client/1.0",
+            },
+            clear=True,
+        ):
+            settings = load_settings()
+
+        self.assertFalse(hasattr(settings, "browser_user_agent"))
+
     def test_write_env_values_updates_known_keys_and_preserves_comments(self) -> None:
         with TemporaryDirectory() as temp_dir:
             env_path = Path(temp_dir) / ".env"

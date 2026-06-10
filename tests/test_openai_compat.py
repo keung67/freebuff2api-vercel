@@ -30,6 +30,11 @@ class OpenAICompatTests(unittest.TestCase):
 
         self.assertEqual(model.agent_id, "base2-free-kimi")
 
+    def test_resolve_minimax_m3_maps_har_agent_id(self) -> None:
+        model = resolve_model("minimax/minimax-m3")
+
+        self.assertEqual(model.agent_id, "base2-free-minimax-m3")
+
     def test_resolve_gemini_model_maps_allowed_agent_combo(self) -> None:
         model = resolve_model("google/gemini-3.1-pro-preview")
 
@@ -139,7 +144,28 @@ class OpenAICompatTests(unittest.TestCase):
 
         self.assertEqual(payload["messages"][0]["role"], "system")
         self.assertEqual(payload["messages"][1]["role"], "user")
+        self.assertTrue(payload["messages"][0]["content"].startswith("You are Buffy"))
         self.assertEqual(body["messages"][0]["role"], "developer")
+
+    def test_build_upstream_payload_adds_buffy_system_prompt_when_missing(self) -> None:
+        payload = build_upstream_payload(
+            {
+                "model": "deepseek/deepseek-v4-pro",
+                "messages": [{"role": "user", "content": "hello"}],
+            },
+            session=FreebuffSession(
+                instance_id="instance-1",
+                model="deepseek/deepseek-v4-pro",
+            ),
+            run_id="run-1",
+            client_id="client-1",
+            trace_session_id="trace-1",
+        )
+
+        self.assertEqual(payload["messages"][0]["role"], "system")
+        self.assertTrue(payload["messages"][0]["content"].startswith("You are Buffy"))
+        self.assertEqual(payload["messages"][0]["cache_control"], {"type": "ephemeral"})
+        self.assertEqual(payload["messages"][1]["role"], "user")
 
     def test_build_upstream_payload_filters_unknown_request_fields(self) -> None:
         payload = build_upstream_payload(

@@ -74,7 +74,6 @@ FREEBUFF_PORT=8000
 FREEBUFF_TIMEZONE=Asia/Shanghai
 FREEBUFF_LOCALE=zh-CN
 FREEBUFF_OS=windows
-FREEBUFF_BROWSER_UA=
 ```
 
 `FREEBUFF_ADMIN_KEY` 默认是 `sk-admin`。启动后可以先用这个默认 key 进入管理面板，再在设置页修改成自己的管理员密钥。公开部署时请务必修改默认值。
@@ -452,6 +451,9 @@ curl -N https://你的项目名.vercel.app/v1/chat/completions `
 - `deepseek/deepseek-v4-pro`
 - `moonshotai/kimi-k2.6`
 - `minimax/minimax-m2.7`
+- `minimax/minimax-m3`
+- `mimo/mimo-v2.5`
+- `mimo/mimo-v2.5-pro`
 
 当前内置 Gemini free agent 组合：
 
