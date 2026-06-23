@@ -173,8 +173,9 @@ def anthropic_to_openai_messages(body: dict[str, Any]) -> list[dict[str, Any]]:
             messages.append({"role": role, "content": str(content or "")})
             continue
 
-        # Separate blocks into text, tool_use, and tool_result groups.
+        # Separate blocks into text, thinking, tool_use, and tool_result groups.
         text_blocks: list[dict[str, Any]] = []
+        thinking_blocks: list[dict[str, Any]] = []
         tool_use_blocks: list[dict[str, Any]] = []
         tool_result_blocks: list[dict[str, Any]] = []
 
@@ -182,17 +183,28 @@ def anthropic_to_openai_messages(body: dict[str, Any]) -> list[dict[str, Any]]:
             if not isinstance(block, dict):
                 continue
             bt = block.get("type")
-            if bt == "tool_use":
+            if bt == "thinking":
+                thinking_blocks.append(block)
+            elif bt == "tool_use":
                 tool_use_blocks.append(block)
             elif bt == "tool_result":
                 tool_result_blocks.append(block)
             else:
                 text_blocks.append(block)
 
-        # Emit text content as one message (role preserved).
-        if text_blocks:
-            openai_content = _anthropic_content_to_openai(text_blocks)
-            messages.append({"role": role, "content": openai_content})
+        # Emit text content as one message (role preserved), with reasoning_content
+        # from any thinking blocks (DeepSeek requires reasoning_content round-trip).
+        if text_blocks or thinking_blocks:
+            openai_content = _anthropic_content_to_openai(text_blocks) if text_blocks else ""
+            msg: dict[str, Any] = {"role": role, "content": openai_content}
+            if thinking_blocks and role == "assistant":
+                reasoning_parts = [
+                    str(b.get("thinking", ""))
+                    for b in thinking_blocks
+                    if isinstance(b, dict)
+                ]
+                msg["reasoning_content"] = "".join(reasoning_parts)
+            messages.append(msg)
 
         # Emit each tool_use as an assistant message with tool_calls.
         for tb in tool_use_blocks:
