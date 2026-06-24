@@ -438,36 +438,35 @@
             </section>
 
             <!-- ====== API Keys ====== -->
-            <section v-if="tab === 'apiKeys'" class="panel-grid">
+            <section v-if="tab === 'apiKeys'" style="max-width:800px;margin:0 auto;">
+              <n-card title="使用说明" :bordered="true" style="margin-bottom:16px;">
+                <p class="muted">每个 API Key 可独立设置允许调用的模型。</p>
+                <p class="muted">调用时使用 <code>Authorization: Bearer &lt;key&gt;</code> 或 <code>x-api-key: &lt;key&gt;</code>。</p>
+                <p class="muted">如果旧版 FREEBUFF_API_KEY 存在，会作为 "default" Key 自动加载。</p>
+              </n-card>
               <n-card :bordered="true">
                 <div class="section-head">
                   <h3>API Key 列表</h3>
                   <n-button type="primary" @click="openApiKeyModal('add')">添加 Key</n-button>
                 </div>
                 <div v-if="apiKeys.items && apiKeys.items.length" class="token-list">
-                  <div v-for="item in apiKeys.items" :key="item.name" class="apikey-row">
-                    <span class="mono" style="font-weight:600;">{{ item.key_prefix }}...</span>
-                    <span class="mono muted">{{ item.name }}</span>
+                  <div v-for="item in apiKeys.items" :key="item.name" class="apikey-row" style="align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span class="mono" style="font-weight:600;font-size:13px;">{{ item.key.slice(0,4) }}****{{ item.key.slice(-4) }}</span>
+                    <n-button quaternary size="tiny" @click="copyApiKey(item.key)" title="复制完整 Key">📋</n-button>
+                    <span class="mono muted" style="font-size:12px;">{{ item.name }}</span>
                     <span class="apikey-models">
                       <n-tag v-for="m in item.allowed_models.slice(0,3)" :key="m" size="tiny" :bordered="false">{{ m }}</n-tag>
                       <span v-if="item.allowed_models.length > 3" class="muted">+{{ item.allowed_models.length - 3 }}</span>
                     </span>
-                    <n-switch :value="item.enabled" @update:value="toggleApiKey(item.name)" size="small" />
-                    <span class="token-actions">
-                      <n-button size="small" secondary @click="openApiKeyModal('edit', item)">编辑</n-button>
-                      <n-popconfirm @positive-click="deleteApiKey(item.name)">
-                        <template #trigger><n-button size="small" tertiary type="error">删除</n-button></template>
-                        删除 API Key "{{ item.name }}"？
-                      </n-popconfirm>
-                    </span>
+                    <n-switch :value="item.enabled" @update:value="toggleApiKey(item.name)" size="small" style="margin-left:auto;" />
+                    <n-button size="small" secondary @click="openApiKeyModal('edit', item)">编辑</n-button>
+                    <n-popconfirm @positive-click="deleteApiKey(item.name)">
+                      <template #trigger><n-button size="small" tertiary type="error">删除</n-button></template>
+                      删除 "{{ item.name }}"？
+                    </n-popconfirm>
                   </div>
                 </div>
                 <div v-else class="empty-box">还没有 API Key，点击右上角添加。</div>
-              </n-card>
-              <n-card title="使用说明" :bordered="true">
-                <p class="muted">每个 API Key 可独立设置允许调用的模型。</p>
-                <p class="muted">调用时使用 <code>Authorization: Bearer &lt;key&gt;</code> 或 <code>x-api-key: &lt;key&gt;</code>。</p>
-                <p class="muted">如果旧版 FREEBUFF_API_KEY 存在，会作为 "default" Key 自动加载。</p>
               </n-card>
             </section>
 
@@ -904,6 +903,15 @@
             await loadOverview();
           } catch (error) {
             message.error(normalizeError(error));
+          }
+        }
+
+        async function copyApiKey(key) {
+          try {
+            await navigator.clipboard.writeText(key);
+            message.success('已复制到剪贴板');
+          } catch (e) {
+            message.error('复制失败');
           }
         }
 

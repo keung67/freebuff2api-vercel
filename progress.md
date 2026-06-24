@@ -92,3 +92,19 @@ PR #3 合并内容（来自 qianze0628/main，4 commits）：
 - freebuff2api/admin_static/index.html (修改) — API Key 列表显示顺序：key_prefix 加粗在前（主标识），name 灰色在后（备注标签）
 
 回滚方式：git revert 本次 commit
+
+## 2026-06-24 - Task: admin API Key 页面 UI 优化
+
+### What was done
+优化 API Key 管理页面：key 显示改为前4+****+后4 脱敏格式，新增一键复制完整 key 按钮，使用说明移至列表上方，列表居中显示，每行内联操作按钮（编辑/删除/启用开关）。后端 list_all 改为返回完整 key 供前端复制使用。
+
+### Testing
+- Playwright 截图验证：key 脱敏显示、复制按钮、使用说明位置、列表居中、行内操作按钮均符合预期
+- 120 个单元测试全部通过
+
+### Notes
+改动文件清单：
+- freebuff2api/usage_store.py (修改) — list_all 改为 mask=False 返回完整 key
+- freebuff2api/admin_static/index.html (修改) — key 脱敏显示+复制按钮+使用说明上移+居中+行内操作+copyApiKey 函数
+
+回滚方式：git revert 本次 commit

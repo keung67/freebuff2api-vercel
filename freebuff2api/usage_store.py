@@ -142,7 +142,7 @@ class ApiKeyStore:
 
     def list_all(self) -> list[dict[str, Any]]:
         with self._lock:
-            return [rec.to_dict(mask=True) for rec in self._keys.values()]
+            return [rec.to_dict(mask=False) for rec in self._keys.values()]
 
     def get(self, name: str) -> ApiKeyRecord | None:
         with self._lock:
