@@ -35,3 +35,25 @@ ormalize_chat_messages 支持 system_prompt 参数实现 Buffy prompt 可配置/
 改动文件：freebuff2api/usage.py (新增)、freebuff2api/usage_store.py (新增)、freebuff2api/config.py (修改)、freebuff2api/app.py (修改)、freebuff2api/admin.py (修改)、freebuff2api/admin_static/index.html (修改)、tests/test_new_features.py (新增)、data/ (新增)
 
 回滚方式：git revert 本次 commit
+
+## 2026-06-24 - Task: PR #3 代码审查与 Bug 修复
+
+### What was done
+拉取 main 最新合并 PR #3 (4 个 commit)，逐项审查 8 处改动，发现并修复 1 个 Bug：OpenAI /v1/chat/completions 端点 403 错误误返回 Anthropic 格式。更新 README 更新日志。
+
+### Testing
+- pytest tests/ 全部 120 个测试通过
+
+### Notes
+改动文件清单：
+- freebuff2api/app.py (修改) — 修复 chat_completions 403 错误从 anthropic_error_payload 恢复为标准 OpenAI {"error": {...}} 格式
+- README.md (修改) — 新增 2026-06-24 更新日志条目
+- progress.md (修改) — 追加本轮任务记录
+
+PR #3 合并内容（来自 qianze0628/main，4 commits）：
+- anthropic_compat.py: reasoning_content 往返保留、SSE text block index 动态分配、空 content 守卫、model 名保留
+- app.py: /v1/messages Anthropic 错误响应、requested_model 保留、/api/keep-warm 端点
+- tests/test_app_messages.py: 错误响应断言适配 Anthropic format
+- .vercel/: Vercel 项目配置文件（含 projectId/orgId，建议后续清理）
+
+回滚方式：git revert cca2de3

@@ -221,10 +221,13 @@ async def chat_completions(request: Request) -> Any:
     if api_key and not api_key.allows_model(model):
         return JSONResponse(
             status_code=403,
-            content=anthropic_error_payload(
-                f"API key '{api_key.name}' not allowed to use model '{model}'",
-                error_type="permission_error",
-            ),
+            content={
+                "error": {
+                    "message": f"API key '{api_key.name}' not allowed to use model '{model}'",
+                    "type": "invalid_request_error",
+                    "code": "model_not_allowed",
+                }
+            },
         )
     logger.info(
         "chat completion request model=%s stream=%s messages=%s",

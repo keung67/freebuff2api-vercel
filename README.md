@@ -24,6 +24,16 @@ Codebuff Freebuff 的 OpenAI-compatible API 适配服务。部署后可以像调
 - 新增 `top_k` 参数支持（上游透传）；流式长连接每 15 s 发送 `event: ping` 心跳保活。
 - 新增 53 个测试用例（`tests/test_anthropic_compat.py` + `tests/test_app_messages.py`），回归全部 120 测试通过。
 
+### 2026-06-24
+
+- **Claude Code 兼容性修复**：非流式响应新增空 content 守卫（上游 token 全用于 reasoning 时，避免 Claude Code 拒绝空 content）；响应 model 字段保留客户端请求的模型名，不再被上游 chunk 覆盖。
+- **reasoning_content 往返保留**：Anthropic `thinking` 类型内容块转换为 OpenAI `reasoning_content`，确保 DeepSeek 等模型的推理内容在 Anthropic ↔ OpenAI 双向转换中不丢失。
+- **SSE 流式 text block index 修复**：修复 text block 索引冲突（之前硬编码 index=0，导致 tool_use 与 text 块交错时 Anthropic index 重复）。text block 现在动态分配 index。
+- **`/v1/messages` 端点错误响应 Anthropic 化**：所有验证错误（messages 缺失、max_tokens 缺失、无效模型、上游异常）统一返回 `{"type": "error", "error": {...}}` 格式，符合 Anthropic API 规范。
+- **`/v1/chat/completions` 端点 403 错误修正**：修复 OpenAI 端点错误返回了 Anthropic 格式的 403 响应，恢复为标准 OpenAI 错误格式。
+- 新增 `/api/keep-warm` 端点，用于 Vercel cron 保活。
+- 回归全部 120 测试通过。
+
 ### 2026-06-10
 
 - 同步原始项目 `freebuff2api-main-oran` 的 Freebuff 上游兼容逻辑：HAR 风格请求头、固定上游 User-Agent、`Accept-Encoding` / `Connection` / `Host` 指纹、waiting-room 广告链路后的 `/api/v1/freebuff/streak` 调用。
